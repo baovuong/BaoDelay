@@ -55,5 +55,15 @@ public:
 
 private:
     //==============================================================================
+    juce::AudioProcessorValueTreeState parameters;
+    
+    float previousMix;
+    float previousTime;
+    float previousFeedback;
+
+    std::atomic<float>* mixParameter = nullptr;
+    std::atomic<float>* timeParameter = nullptr;
+    std::atomic<float>* feedbackParameter = nullptr;
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BaoDelayAudioProcessor)
 };

@@ -19,9 +19,17 @@ BaoDelayAudioProcessor::BaoDelayAudioProcessor()
                       #endif
                        .withOutput ("Output", juce::AudioChannelSet::stereo(), true)
                      #endif
-                       )
+                       ), parameters(*this, nullptr, juce::Identifier("BaoDelay"),
+                       {
+                            std::make_unique<juce::AudioParameterFloat>("feedback", "Feedback", 0.0f, 1.0f, 0.5f),
+                            std::make_unique<juce::AudioParameterFloat>("time", "Time", 0.0f, 1.0f, 0.5f),
+                            std::make_unique<juce::AudioParameterFloat>("mix", "Wet/Dry", 0.0f, 1.0f, 0.5f)
+                       })
 #endif
 {
+    mixParameter = parameters.getRawParameterValue("mix");
+    feedbackParameter = parameters.getRawParameterValue("feedback");
+    timeParameter = parameters.getRawParameterValue("time");
 }
 
 BaoDelayAudioProcessor::~BaoDelayAudioProcessor()
@@ -131,6 +139,8 @@ bool BaoDelayAudioProcessor::isBusesLayoutSupported (const BusesLayout& layouts)
 
 void BaoDelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
+    std::cout << "Here we go!" << std::endl;
+
     juce::ScopedNoDenormals noDenormals;
     auto totalNumInputChannels  = getTotalNumInputChannels();
     auto totalNumOutputChannels = getTotalNumOutputChannels();
@@ -150,11 +160,22 @@ void BaoDelayAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juc
     // the samples and the outer loop is handling the channels.
     // Alternatively, you can process the samples with the channels
     // interleaved by keeping the same state.
+
+    int d = *timeParameter*buffer.getNumSamples();
+    std::cout << "d: " << d << std::endl;
+    int a = *mixParameter;
+    std::cout << "a: " << a << std::endl;
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
-        auto* channelData = buffer.getWritePointer (channel);
+        const float* inBuffer = buffer.getReadPointer(channel, 0);
+        float* outBuffer = buffer.getWritePointer (channel, 0);
 
-        // ..do something to the data...
+        for (int sample = 0; sample < buffer.getNumSamples(); sample++) {
+            int offset = (sample - d) % buffer.getNumSamples();
+            outBuffer[sample] = inBuffer[sample] + (sample >= d ? a*inBuffer[offset] : 0.f);
+        }
+
     }
 }
 
@@ -166,7 +187,7 @@ bool BaoDelayAudioProcessor::hasEditor() const
 
 juce::AudioProcessorEditor* BaoDelayAudioProcessor::createEditor()
 {
-    return new BaoDelayAudioProcessorEditor (*this);
+    return new BaoDelayAudioProcessorEditor (*this, parameters);
 }
 
 //==============================================================================

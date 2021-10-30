@@ -17,7 +17,7 @@
 class BaoDelayAudioProcessorEditor  : public juce::AudioProcessorEditor
 {
 public:
-    BaoDelayAudioProcessorEditor (BaoDelayAudioProcessor&);
+    BaoDelayAudioProcessorEditor (BaoDelayAudioProcessor&, juce::AudioProcessorValueTreeState&);
     ~BaoDelayAudioProcessorEditor() override;
 
     //==============================================================================
@@ -28,6 +28,27 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     BaoDelayAudioProcessor& audioProcessor;
+
+    juce::Label versionLabel;
+
+
+    juce::AudioProcessorValueTreeState& valueTreeState;
+    
+    // Wet/Dry
+    juce::Label mixLabel;
+    juce::Slider mixKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> mixAttachment;
+
+    // Feedback
+    juce::Label feedbackLabel;
+    juce::Slider feedbackKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> feedbackAttachment;
+
+    // Time
+    juce::Label timeLabel;
+    juce::Slider timeKnob;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> timeAttachment;
+
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BaoDelayAudioProcessorEditor)
 };
