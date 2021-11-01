@@ -65,5 +65,11 @@ private:
     std::atomic<float>* timeParameter = nullptr;
     std::atomic<float>* feedbackParameter = nullptr;
 
+    juce::AudioBuffer<float> delayBuffer;
+    int writePosition = 0;
+
+    void fillDelayBuffer(int channel, int bufferSize, int delayBufferSize, float* channelData, float gain);
+    void readFromDelayBuffer(int channel, int bufferSize, int delayBufferSize, juce::AudioBuffer<float> &buffer, juce::AudioBuffer<float>& delayBuffer, float delayTime, float gain);
+
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BaoDelayAudioProcessor)
 };
