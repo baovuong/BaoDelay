@@ -155,8 +155,8 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
     for (auto i = totalNumInputChannels; i < totalNumOutputChannels; ++i)
         buffer.clear(i, 0, buffer.getNumSamples());
 
-    auto bufferSize = buffer.getNumSamples();
-    auto delayBufferSize = delayBuffer.getNumSamples();
+    const int bufferSize = buffer.getNumSamples();
+    const int delayBufferSize = delayBuffer.getNumSamples();
 
     float time = *timeParameter;
     float mix = *mixParameter;
@@ -166,43 +166,39 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
     {
         auto *channelData = buffer.getWritePointer(channel);
 
-        fillDelayBuffer(channel, bufferSize, delayBufferSize, channelData, mix);
-        readFromDelayBuffer(channel, bufferSize, delayBufferSize, buffer, delayBuffer, time, mix);
+        const float* bufferData = buffer.getReadPointer(channel);
+        const float* delayBufferData = delayBuffer.getReadPointer(channel);
+
+        fillDelayBuffer(channel, bufferSize, delayBufferSize, bufferData, mix);
+        readFromDelayBuffer(buffer, channel, bufferSize, delayBufferSize, bufferData, delayBufferData, time);
     }
     writePosition += bufferSize;
     writePosition %= delayBufferSize;
 }
 
-void BaoDelayAudioProcessor::readFromDelayBuffer(int channel, int bufferSize, int delayBufferSize, juce::AudioBuffer<float> &buffer, juce::AudioBuffer<float>& delayBuffer, float delayTime, float gain)
+void BaoDelayAudioProcessor::readFromDelayBuffer(juce::AudioBuffer<float> &buffer, int channel, int bufferSize, int delayBufferSize, const float* bufferData, const float* delayBufferData, float delayTime)
 {
-    auto readPosition = writePosition - (getSampleRate() * delayTime);
+    const int readPosition = (int)(delayBufferSize + writePosition - (getSampleRate() * delayTime)) % delayBufferSize;
 
-    if (readPosition < 0)
+    if (delayBufferSize > bufferSize + readPosition)
     {
-        readPosition += delayBufferSize;
-    }
-
-    if (readPosition + bufferSize < delayBufferSize)
-    {
-        buffer.addFromWithRamp(channel, 0, delayBuffer.getReadPointer(channel, readPosition), bufferSize, gain, gain);
+        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferSize);
     }
     else
     {
-        auto numSamplesToEnd = delayBufferSize - readPosition;
-        buffer.addFromWithRamp(channel, 0, delayBuffer.getReadPointer(channel, readPosition), numSamplesToEnd, gain, gain);
-
-        auto numSamplesAtStart = bufferSize - numSamplesToEnd;
-        buffer.addFromWithRamp(channel, numSamplesToEnd, delayBuffer.getReadPointer(channel, 0), numSamplesAtStart, gain, gain);
+        const int bufferRemaining = delayBufferSize - readPosition;
+        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferRemaining);
+        buffer.addFrom(channel, bufferRemaining, delayBufferData, bufferSize - bufferRemaining);
     }
 }
 
-void BaoDelayAudioProcessor::fillDelayBuffer(int channel, int bufferSize, int delayBufferSize, float *channelData, float gain)
+void BaoDelayAudioProcessor::fillDelayBuffer(int channel, int bufferSize, int delayBufferSize, const float *bufferData, float gain)
 {
     // check to see if main buffer copies to delay buffer without needing to wrap...
     if (delayBufferSize > bufferSize + writePosition)
     {
         // copy main buffer contents to delay buffer
-        delayBuffer.copyFromWithRamp(channel, writePosition, channelData, bufferSize, gain, gain);
+        delayBuffer.copyFromWithRamp(channel, writePosition, bufferData, bufferSize, gain, gain);
     }
     else
     {
@@ -210,13 +206,13 @@ void BaoDelayAudioProcessor::fillDelayBuffer(int channel, int bufferSize, int de
         auto numSamplesToEnd = delayBufferSize - writePosition;
 
         // Copy that amount of contents to the end...
-        delayBuffer.copyFromWithRamp(channel, writePosition, channelData, numSamplesToEnd, gain, gain);
+        delayBuffer.copyFromWithRamp(channel, writePosition, bufferData, numSamplesToEnd, gain, gain);
 
         // Calculate how much contents is remaining to copy
         auto numSamplesAtStart = bufferSize - numSamplesToEnd;
 
         // Copy remaining amount to beginning of delay buffer
-        delayBuffer.copyFromWithRamp(channel, 0, channelData + numSamplesToEnd, numSamplesAtStart, gain, gain);
+        delayBuffer.copyFromWithRamp(channel, 0, bufferData + numSamplesToEnd, numSamplesAtStart, gain, gain);
     }
 }
 
