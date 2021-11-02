@@ -168,9 +168,11 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
 
         const float* bufferData = buffer.getReadPointer(channel);
         const float* delayBufferData = delayBuffer.getReadPointer(channel);
+        float* dryBuffer = buffer.getWritePointer(channel);
 
         fillDelayBuffer(channel, bufferSize, delayBufferSize, bufferData, mix);
         readFromDelayBuffer(buffer, channel, bufferSize, delayBufferSize, bufferData, delayBufferData, time);
+        feedbackDelay(channel, bufferSize, delayBufferSize, bufferData, dryBuffer);
     }
     writePosition += bufferSize;
     writePosition %= delayBufferSize;
@@ -213,6 +215,20 @@ void BaoDelayAudioProcessor::fillDelayBuffer(int channel, int bufferSize, int de
 
         // Copy remaining amount to beginning of delay buffer
         delayBuffer.copyFromWithRamp(channel, 0, bufferData + numSamplesToEnd, numSamplesAtStart, gain, gain);
+    }
+}
+
+void BaoDelayAudioProcessor::feedbackDelay(int channel, int bufferSize, int delayBufferSize, const float* bufferData, float* dryBufferData)
+{
+    if (delayBufferSize > bufferSize + writePosition)
+    {
+        delayBuffer.addFromWithRamp(channel, writePosition, dryBufferData, bufferSize, 0.8, 0.8);
+    }
+    else
+    {
+        const int bufferRemaining = delayBufferSize - writePosition;
+        delayBuffer.addFromWithRamp(channel, bufferRemaining, dryBufferData, bufferRemaining, 0.8, 0.8);
+        delayBuffer.addFromWithRamp(channel, 0, dryBufferData, bufferSize - bufferRemaining, 0.8, 0.8);
     }
 }
 
