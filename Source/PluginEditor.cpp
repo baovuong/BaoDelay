@@ -16,10 +16,10 @@ BaoDelayAudioProcessorEditor::BaoDelayAudioProcessorEditor (BaoDelayAudioProcess
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (600, 500);
+    setLookAndFeel(&vngIdLookAndFeel);
 
     // === Mix ===
     addAndMakeVisible(mixKnob);
-    mixKnob.setLookAndFeel(&vngIdLookAndFeel);
     mixKnob.setRange(0.0, 0.1, 0.01);
     mixKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     mixKnob.setTextBoxStyle (juce::Slider::NoTextBox, false, 200, 20);
@@ -31,7 +31,6 @@ BaoDelayAudioProcessorEditor::BaoDelayAudioProcessorEditor (BaoDelayAudioProcess
     
     // === Feedback ===
     addAndMakeVisible(feedbackKnob);
-    feedbackKnob.setLookAndFeel(&vngIdLookAndFeel);
     feedbackKnob.setRange(0.0, 0.1, 0.01);
     feedbackKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     feedbackKnob.setTextBoxStyle (juce::Slider::NoTextBox, false, 90, 0);
@@ -43,7 +42,6 @@ BaoDelayAudioProcessorEditor::BaoDelayAudioProcessorEditor (BaoDelayAudioProcess
 
     // === Time ===
     addAndMakeVisible(timeKnob);
-    timeKnob.setLookAndFeel(&vngIdLookAndFeel);
     timeKnob.setRange(0.0, 0.1, 0.01);
     timeKnob.setSliderStyle(juce::Slider::SliderStyle::RotaryVerticalDrag);
     timeKnob.setTextBoxStyle (juce::Slider::NoTextBox, false, 90, 0);
