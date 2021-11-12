@@ -23,9 +23,9 @@ BaoDelayAudioProcessor::BaoDelayAudioProcessor()
 #endif
                          ),
       parameters(*this, nullptr, juce::Identifier("BaoDelay"),
-                 {std::make_unique<juce::AudioParameterFloat>("feedback", "Feedback", 0.0f, 1.0f, 0.5f),
-                  std::make_unique<juce::AudioParameterFloat>("time", "Time", 0.0f, 1.0f, 0.5f),
-                  std::make_unique<juce::AudioParameterFloat>("mix", "Wet/Dry", 0.0f, 1.0f, 0.5f)})
+                 {std::make_unique<juce::AudioParameterFloat>("feedback", "Feedback", 0.0f, 1.0f, 0.0f),
+                  std::make_unique<juce::AudioParameterFloat>("time", "Time", 0.0f, 1.0f, 0.0f),
+                  std::make_unique<juce::AudioParameterFloat>("mix", "Wet/Dry", 0.0f, 1.0f, 0.0f)})
 #endif
 {
     mixParameter = parameters.getRawParameterValue("mix");

@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "VngIdLookAndFeel.h"
 
 //==============================================================================
 /**
@@ -28,6 +29,8 @@ private:
     // This reference is provided as a quick way for your editor to
     // access the processor object that created it.
     BaoDelayAudioProcessor& audioProcessor;
+
+    VngIdLookAndFeel vngIdLookAndFeel;
 
     juce::Label versionLabel;
 

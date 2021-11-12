@@ -16,6 +16,7 @@ BaoDelayAudioProcessorEditor::BaoDelayAudioProcessorEditor (BaoDelayAudioProcess
     // Make sure that before the constructor has finished, you've set the
     // editor's size to whatever you need it to be.
     setSize (600, 500);
+    setLookAndFeel(&vngIdLookAndFeel);
 
     // === Mix ===
     addAndMakeVisible(mixKnob);
