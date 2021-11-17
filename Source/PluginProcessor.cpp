@@ -23,9 +23,9 @@ BaoDelayAudioProcessor::BaoDelayAudioProcessor()
 #endif
                          ),
       parameters(*this, nullptr, juce::Identifier("BaoDelay"),
-                 {std::make_unique<juce::AudioParameterFloat>("feedback", "Feedback", 0.0f, 1.0f, 0.0f),
-                  std::make_unique<juce::AudioParameterFloat>("time", "Time", 0.0f, 1.0f, 0.0f),
-                  std::make_unique<juce::AudioParameterFloat>("mix", "Wet/Dry", 0.0f, 1.0f, 0.0f)})
+                 {std::make_unique<juce::AudioParameterFloat>("feedback", "Feedback", 0.0f, 1.0f, 0.3f),
+                  std::make_unique<juce::AudioParameterFloat>("time", "Time", 0.0f, 1.0f, 0.3f),
+                  std::make_unique<juce::AudioParameterFloat>("mix", "Wet/Dry", 0.0f, 1.0f, 0.5f)})
 #endif
 {
     mixParameter = parameters.getRawParameterValue("mix");
@@ -162,6 +162,8 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
     float mix = *mixParameter;
     float feedback = *feedbackParameter;
 
+    float dryMix = 1.0 - mix;
+
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
         auto *channelData = buffer.getWritePointer(channel);
@@ -170,27 +172,27 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
         const float* delayBufferData = delayBuffer.getReadPointer(channel);
         float* dryBuffer = buffer.getWritePointer(channel);
 
-        fillDelayBuffer(channel, bufferSize, delayBufferSize, bufferData, mix);
-        readFromDelayBuffer(buffer, channel, bufferSize, delayBufferSize, bufferData, delayBufferData, time);
+        fillDelayBuffer(channel, bufferSize, delayBufferSize, bufferData, dryMix);
+        readFromDelayBuffer(buffer, channel, bufferSize, delayBufferSize, delayBufferData, time, mix);
         feedbackDelay(channel, bufferSize, delayBufferSize, bufferData, dryBuffer, feedback);
     }
     writePosition += bufferSize;
     writePosition %= delayBufferSize;
 }
 
-void BaoDelayAudioProcessor::readFromDelayBuffer(juce::AudioBuffer<float> &buffer, int channel, int bufferSize, int delayBufferSize, const float* bufferData, const float* delayBufferData, float delayTime)
+void BaoDelayAudioProcessor::readFromDelayBuffer(juce::AudioBuffer<float> &buffer, int channel, int bufferSize, int delayBufferSize, const float* delayBufferData, float delayTime, float gain)
 {
     const int readPosition = (int)(delayBufferSize + writePosition - (getSampleRate() * delayTime)) % delayBufferSize;
 
     if (delayBufferSize > bufferSize + readPosition)
     {
-        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferSize);
+        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferSize, gain);
     }
     else
     {
         const int bufferRemaining = delayBufferSize - readPosition;
-        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferRemaining);
-        buffer.addFrom(channel, bufferRemaining, delayBufferData, bufferSize - bufferRemaining);
+        buffer.addFrom(channel, 0, delayBufferData + readPosition, bufferRemaining, gain);
+        buffer.addFrom(channel, bufferRemaining, delayBufferData, bufferSize - bufferRemaining, gain);
     }
 }
 

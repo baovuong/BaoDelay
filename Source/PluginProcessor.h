@@ -69,7 +69,7 @@ private:
     int writePosition = 0;
 
     void fillDelayBuffer(int channel, int bufferSize, int delayBufferSize, const float* bufferData, float gain);
-    void readFromDelayBuffer(juce::AudioBuffer<float> &buffer, int channel, int bufferSize, int delayBufferSize, const float* bufferData, const float* delayBufferData, float delayTime);
+    void readFromDelayBuffer(juce::AudioBuffer<float> &buffer, int channel, int bufferSize, int delayBufferSize, const float* delayBufferData, float delayTime, float gain);
     void feedbackDelay(int channel, int bufferSize, int delayBufferSize, const float* bufferData, float* dryBufferData, float gain);
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (BaoDelayAudioProcessor)
