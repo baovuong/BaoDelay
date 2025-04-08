@@ -54,6 +54,10 @@ BaoDelayAudioProcessorEditor::BaoDelayAudioProcessorEditor (BaoDelayAudioProcess
 
 BaoDelayAudioProcessorEditor::~BaoDelayAudioProcessorEditor()
 {
+	setLookAndFeel(nullptr);
+	mixAttachment.reset();
+	feedbackAttachment.reset();
+	timeAttachment.reset();
 }
 
 //==============================================================================
