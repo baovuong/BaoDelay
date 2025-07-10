@@ -104,7 +104,7 @@ void BaoDelayAudioProcessor::prepareToPlay(double sampleRate, int samplesPerBloc
 {
     // Use this method as the place to do any pre-playback
     // initialisation that you need..
-    auto delayBufferSize = sampleRate * MAX_TIME * 2.0;
+    double delayBufferSize = sampleRate * MAX_TIME;
     delayBuffer.setSize(getTotalNumOutputChannels(), (int)delayBufferSize);
 }
 
@@ -162,7 +162,7 @@ void BaoDelayAudioProcessor::processBlock(juce::AudioBuffer<float> &buffer, juce
     float mix = *mixParameter;
     float feedback = *feedbackParameter;
 
-    float dryMix = 1.0 - mix;
+    float dryMix = 1.f - mix;
 
     for (int channel = 0; channel < totalNumInputChannels; ++channel)
     {
@@ -207,13 +207,13 @@ void BaoDelayAudioProcessor::fillDelayBuffer(int channel, int bufferSize, int de
     else
     {
         // Determine how much space is left at the end of the delay buffer
-        auto numSamplesToEnd = delayBufferSize - writePosition;
+        int numSamplesToEnd = delayBufferSize - writePosition;
 
         // Copy that amount of contents to the end...
         delayBuffer.copyFromWithRamp(channel, writePosition, bufferData, numSamplesToEnd, gain, gain);
 
         // Calculate how much contents is remaining to copy
-        auto numSamplesAtStart = bufferSize - numSamplesToEnd;
+        int numSamplesAtStart = bufferSize - numSamplesToEnd;
 
         // Copy remaining amount to beginning of delay buffer
         delayBuffer.copyFromWithRamp(channel, 0, bufferData + numSamplesToEnd, numSamplesAtStart, gain, gain);
